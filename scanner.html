@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1"
+  >
+
+  <title>Scanner - Raquel Semijoias</title>
+
+  <!-- Biblioteca para leitura do código de barras -->
+  <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f8f5f3;
+      color: #333;
+    }
+
+    .topo {
+      background: #B76E79;
+      color: white;
+      padding: 20px 15px;
+      text-align: center;
+    }
+
+    .topo h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .topo p {
+      margin: 5px 0 0;
+      font-size: 13px;
+    }
+
+    .conteudo {
+      max-width: 650px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    .scanner {
+      background: #222;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .instrucao {
+      color: white;
+      text-align: center;
+      font-size: 14px;
+      margin: 5px 0 12px;
+    }
+
+    .video-area {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: black;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      min-height: 300px;
+      max-height: 500px;
+      object-fit: cover;
+      background: black;
+    }
+
+    .moldura {
+      position: absolute;
+      left: 7%;
+      right: 7%;
+      top: 32%;
+      height: 36%;
+      border: 3px solid white;
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    .linha {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 50%;
+      height: 3px;
+      background: white;
+      box-shadow: 0 0 10px white;
+      pointer-events: none;
+    }
+
+    .status {
+      margin-top: 15px;
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .botao {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: bold;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+
+    .principal {
+      background: #B76E79;
+      color: white;
+    }
+
+    .secundario {
+      background: white;
+      color: #72535a;
+    }
+
+    .manual {
+      margin-top: 18px;
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 17px;
+    }
+
+    .erro {
+      color: #b00020;
+    }
+
+    .sucesso {
+      color: #168217;
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+  <div class="topo">
+
+    <h1>📷 Scanner</h1>
+
+    <p>Raquel Semijoias</p>
+
+  </div>
+
+
+  <div class="conteudo">
+
+    <div class="scanner">
+
+      <div class="instrucao">
+        Aponte a câmera traseira para o código de barras da peça
+      </div>
+
+
+      <div class="video-area">
+
+        <video
+          id="video"
+          autoplay
+          muted
+          playsinline
+        ></video>
+
+        <div class="moldura"></div>
+
+        <div class="linha"></div>
+
+      </div>
+
+
+      <button
+        id="botaoIniciar"
+        class="botao principal"
+        onclick="iniciarScanner()"
+      >
+        📷 Abrir câmera
+      </button>
+
+
+      <button
+        class="botao secundario"
+        onclick="fecharScanner()"
+      >
+        ✕ Fechar câmera
+      </button>
+
+    </div>
+
+
+    <div
+      id="status"
+      class="status"
+    >
+      Toque em "Abrir câmera".
+    </div>
+
+
+    <div class="manual">
+
+      <label for="codigoManual">
+        Digitar código manualmente
+      </label>
+
+      <input
+        id="codigoManual"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="Digite o código"
+      >
+
+      <button
+        class="botao principal"
+        onclick="usarCodigoManual()"
+      >
+        Usar este código
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    let leitor = null;
+
+    let stream = null;
+
+    let lendo = false;
+
+    let codigoEncontrado = false;
+
+
+    /*
+     * ENDEREÇO DE RETORNO PARA O ERP
+     */
+    const parametros =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const URL_RETORNO =
+      parametros.get("retorno");
+
+
+    /*
+     * ABRIR A CÂMERA
+     */
+    async function iniciarScanner() {
+
+      if (!URL_RETORNO) {
+
+        mostrarErro(
+          "Abra o scanner através do botão Escanear Código do sistema Raquel Semijoias."
+        );
+
+        return;
+      }
+
+
+      if (typeof ZXing === "undefined") {
+
+        mostrarErro(
+          "O leitor de código de barras não carregou. Atualize esta página."
+        );
+
+        return;
+      }
+
+
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+
+        mostrarErro(
+          "Este navegador não permite acesso à câmera."
+        );
+
+        return;
+      }
+
+
+      fecharScanner();
+
+      codigoEncontrado = false;
+
+
+      mostrarStatus(
+        "Abrindo câmera..."
+      );
+
+
+      try {
+
+        /*
+         * SOLICITA A CÂMERA TRASEIRA
+         */
+        stream =
+          await navigator.mediaDevices.getUserMedia({
+
+            video: {
+
+              facingMode: {
+                ideal: "environment"
+              },
+
+              width: {
+                ideal: 1280
+              },
+
+              height: {
+                ideal: 720
+              }
+
+            },
+
+            audio: false
+
+          });
+
+
+        const video =
+          document.getElementById("video");
+
+
+        video.srcObject = stream;
+
+        video.muted = true;
+
+        video.setAttribute(
+          "playsinline",
+          "true"
+        );
+
+
+        await video.play();
+
+
+        lendo = true;
+
+
+        document
+          .getElementById("botaoIniciar")
+          .textContent =
+          "📷 Câmera aberta";
+
+
+        mostrarStatus(
+          "Câmera aberta! Aponte para o código de barras."
+        );
+
+
+        /*
+         * INICIA O ZXING
+         */
+        leitor =
+          new ZXing.BrowserMultiFormatReader();
+
+
+        iniciarLeitura();
+
+      }
+      catch (erro) {
+
+        console.log(
+          "Erro ao abrir câmera:",
+          erro
+        );
+
+
+        fecharScanner();
+
+
+        if (
+          erro &&
+          erro.name === "NotAllowedError"
+        ) {
+
+          mostrarErro(
+            "A câmera foi bloqueada. Permita o acesso à câmera para este site e tente novamente."
+          );
+
+        }
+
+        else if (
+          erro &&
+          erro.name === "NotFoundError"
+        ) {
+
+          mostrarErro(
+            "Nenhuma câmera foi encontrada neste aparelho."
+          );
+
+        }
+
+        else if (
+          erro &&
+          erro.name === "NotReadableError"
+        ) {
+
+          mostrarErro(
+            "A câmera está sendo usada por outro aplicativo. Feche outros aplicativos e tente novamente."
+          );
+
+        }
+
+        else {
+
+          mostrarErro(
+            "Não foi possível abrir a câmera."
+          );
+
+        }
+
+      }
+
+    }
+
+
+    /*
+     * LEITURA DO CÓDIGO
+     */
+    function iniciarLeitura() {
+
+      if (
+        !leitor ||
+        !lendo
+      ) {
+
+        return;
+      }
+
+
+      const video =
+        document.getElementById("video");
+
+
+      leitor.decodeFromVideoElementContinuously(
+
+        video,
+
+        function(resultado, erro) {
+
+          if (
+            !lendo ||
+            codigoEncontrado
+          ) {
+
+            return;
+          }
+
+
+          if (resultado) {
+
+            let codigo = "";
+
+
+            if (
+              typeof resultado.getText ===
+              "function"
+            ) {
+
+              codigo =
+                resultado.getText();
+
+            }
+
+            else {
+
+              codigo =
+                resultado.text || "";
+
+            }
+
+
+            codigo =
+              String(codigo).trim();
+
+
+            if (codigo) {
+
+              codigoEncontrado = true;
+
+
+              if (navigator.vibrate) {
+
+                navigator.vibrate(
+                  [100, 60, 100]
+                );
+
+              }
+
+
+              mostrarSucesso(
+                "✅ Código encontrado: " +
+                codigo
+              );
+
+
+              fecharScanner();
+
+
+              setTimeout(
+                function() {
+
+                  retornarCodigo(
+                    codigo
+                  );
+
+                },
+                700
+              );
+
+            }
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+    /*
+     * VOLTAR PARA O RAQUEL SEMIJOIAS
+     */
+    function retornarCodigo(codigo) {
+
+      if (!URL_RETORNO) {
+
+        mostrarErro(
+          "Não foi possível voltar ao sistema."
+        );
+
+        return;
+      }
+
+
+      const separador =
+        URL_RETORNO.includes("?")
+          ? "&"
+          : "?";
+
+
+      const destino =
+        URL_RETORNO +
+        separador +
+        "tela=produto" +
+        "&codigo=" +
+        encodeURIComponent(codigo);
+
+
+      window.location.href =
+        destino;
+
+    }
+
+
+    /*
+     * DIGITAÇÃO MANUAL
+     */
+    function usarCodigoManual() {
+
+      const codigo =
+        document
+          .getElementById("codigoManual")
+          .value
+          .trim();
+
+
+      if (!codigo) {
+
+        mostrarErro(
+          "Digite o código de barras."
+        );
+
+        return;
+      }
+
+
+      retornarCodigo(
+        codigo
+      );
+
+    }
+
+
+    /*
+     * FECHAR CÂMERA
+     */
+    function fecharScanner() {
+
+      lendo = false;
+
+
+      if (leitor) {
+
+        try {
+
+          leitor.reset();
+
+        }
+        catch (erro) {
+
+        }
+
+      }
+
+
+      leitor = null;
+
+
+      if (stream) {
+
+        try {
+
+          stream
+            .getTracks()
+            .forEach(
+              function(track) {
+
+                track.stop();
+
+              }
+            );
+
+        }
+        catch (erro) {
+
+        }
+
+      }
+
+
+      stream = null;
+
+
+      const video =
+        document.getElementById("video");
+
+
+      if (video) {
+
+        try {
+
+          video.pause();
+
+        }
+        catch (erro) {
+
+        }
+
+
+        video.srcObject = null;
+
+      }
+
+
+      const botao =
+        document.getElementById(
+          "botaoIniciar"
+        );
+
+
+      if (botao) {
+
+        botao.textContent =
+          "📷 Abrir câmera";
+
+      }
+
+    }
+
+
+    /*
+     * MENSAGENS
+     */
+    function mostrarStatus(texto) {
+
+      const campo =
+        document.getElementById("status");
+
+
+      campo.className =
+        "status";
+
+
+      campo.textContent =
+        texto;
+
+    }
+
+
+    function mostrarErro(texto) {
+
+      const campo =
+        document.getElementById("status");
+
+
+      campo.className =
+        "status erro";
+
+
+      campo.textContent =
+        texto;
+
+    }
+
+
+    function mostrarSucesso(texto) {
+
+      const campo =
+        document.getElementById("status");
+
+
+      campo.className =
+        "status sucesso";
+
+
+      campo.textContent =
+        texto;
+
+    }
+
+
+    /*
+     * FECHA A CÂMERA AO SAIR
+     */
+    window.addEventListener(
+      "beforeunload",
+      function() {
+
+        fecharScanner();
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>
