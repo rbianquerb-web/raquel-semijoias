@@ -11,11 +11,9 @@
 
   <title>Scanner - Raquel Semijoias</title>
 
-  <!-- Biblioteca para leitura do código de barras -->
   <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
 
   <style>
-
     * {
       box-sizing: border-box;
     }
@@ -54,7 +52,6 @@
       background: #222;
       border-radius: 14px;
       padding: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
     .instrucao {
@@ -83,10 +80,10 @@
 
     .moldura {
       position: absolute;
-      left: 7%;
-      right: 7%;
-      top: 32%;
-      height: 36%;
+      left: 5%;
+      right: 5%;
+      top: 35%;
+      height: 30%;
       border: 3px solid white;
       border-radius: 10px;
       pointer-events: none;
@@ -94,8 +91,8 @@
 
     .linha {
       position: absolute;
-      left: 10%;
-      right: 10%;
+      left: 8%;
+      right: 8%;
       top: 50%;
       height: 3px;
       background: white;
@@ -134,27 +131,6 @@
       color: #72535a;
     }
 
-    .manual {
-      margin-top: 18px;
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 17px;
-    }
-
     .erro {
       color: #b00020;
     }
@@ -162,30 +138,23 @@
     .sucesso {
       color: #168217;
     }
-
   </style>
 </head>
-
 
 <body>
 
   <div class="topo">
-
     <h1>📷 Scanner</h1>
-
     <p>Raquel Semijoias</p>
-
   </div>
-
 
   <div class="conteudo">
 
     <div class="scanner">
 
       <div class="instrucao">
-        Aponte a câmera traseira para o código de barras da peça
+        Centralize o código inteiro dentro da moldura
       </div>
-
 
       <div class="video-area">
 
@@ -197,11 +166,9 @@
         ></video>
 
         <div class="moldura"></div>
-
         <div class="linha"></div>
 
       </div>
-
 
       <button
         id="botaoIniciar"
@@ -210,7 +177,6 @@
       >
         📷 Abrir câmera
       </button>
-
 
       <button
         class="botao secundario"
@@ -221,7 +187,6 @@
 
     </div>
 
-
     <div
       id="status"
       class="status"
@@ -229,47 +194,15 @@
       Toque em "Abrir câmera".
     </div>
 
-
-    <div class="manual">
-
-      <label for="codigoManual">
-        Digitar código manualmente
-      </label>
-
-      <input
-        id="codigoManual"
-        type="text"
-        inputmode="numeric"
-        autocomplete="off"
-        placeholder="Digite o código"
-      >
-
-      <button
-        class="botao principal"
-        onclick="usarCodigoManual()"
-      >
-        Usar este código
-      </button>
-
-    </div>
-
   </div>
-
 
   <script>
 
     let leitor = null;
-
     let stream = null;
-
     let lendo = false;
-
     let codigoEncontrado = false;
 
-
-    /*
-     * ENDEREÇO DE RETORNO PARA O ERP
-     */
     const parametros =
       new URLSearchParams(
         window.location.search
@@ -279,15 +212,12 @@
       parametros.get("retorno");
 
 
-    /*
-     * ABRIR A CÂMERA
-     */
     async function iniciarScanner() {
 
       if (!URL_RETORNO) {
 
         mostrarErro(
-          "Abra o scanner através do botão Escanear Código do sistema Raquel Semijoias."
+          "Abra o scanner pelo sistema Raquel Semijoias."
         );
 
         return;
@@ -297,20 +227,7 @@
       if (typeof ZXing === "undefined") {
 
         mostrarErro(
-          "O leitor de código de barras não carregou. Atualize esta página."
-        );
-
-        return;
-      }
-
-
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-      ) {
-
-        mostrarErro(
-          "Este navegador não permite acesso à câmera."
+          "O leitor não carregou. Atualize a página."
         );
 
         return;
@@ -322,16 +239,8 @@
       codigoEncontrado = false;
 
 
-      mostrarStatus(
-        "Abrindo câmera..."
-      );
-
-
       try {
 
-        /*
-         * SOLICITA A CÂMERA TRASEIRA
-         */
         stream =
           await navigator.mediaDevices.getUserMedia({
 
@@ -342,11 +251,11 @@
               },
 
               width: {
-                ideal: 1280
+                ideal: 1920
               },
 
               height: {
-                ideal: 720
+                ideal: 1080
               }
 
             },
@@ -362,13 +271,10 @@
 
         video.srcObject = stream;
 
-        video.muted = true;
-
         video.setAttribute(
           "playsinline",
           "true"
         );
-
 
         await video.play();
 
@@ -376,145 +282,108 @@
         lendo = true;
 
 
-        document
-          .getElementById("botaoIniciar")
-          .textContent =
-          "📷 Câmera aberta";
-
-
         mostrarStatus(
-          "Câmera aberta! Aponte para o código de barras."
+          "Câmera aberta. Enquadre o código COMPLETO."
         );
 
 
         /*
-         * INICIA O ZXING
+         * =================================================
+         * FORÇA FORMATO CODE 128
+         * =================================================
          */
-        leitor =
-          new ZXing.BrowserMultiFormatReader();
+
+        const hints =
+          new Map();
 
 
-        iniciarLeitura();
+        const formatos =
+          [
+            ZXing.BarcodeFormat.CODE_128,
+            ZXing.BarcodeFormat.CODE_39,
+            ZXing.BarcodeFormat.CODE_93
+          ];
 
-      }
-      catch (erro) {
 
-        console.log(
-          "Erro ao abrir câmera:",
-          erro
+        hints.set(
+          ZXing.DecodeHintType.POSSIBLE_FORMATS,
+          formatos
         );
 
 
-        fecharScanner();
+        hints.set(
+          ZXing.DecodeHintType.TRY_HARDER,
+          true
+        );
 
 
-        if (
-          erro &&
-          erro.name === "NotAllowedError"
-        ) {
-
-          mostrarErro(
-            "A câmera foi bloqueada. Permita o acesso à câmera para este site e tente novamente."
+        leitor =
+          new ZXing.BrowserMultiFormatReader(
+            hints
           );
 
-        }
 
-        else if (
-          erro &&
-          erro.name === "NotFoundError"
-        ) {
+        leitor.decodeFromVideoElementContinuously(
 
-          mostrarErro(
-            "Nenhuma câmera foi encontrada neste aparelho."
-          );
+          video,
 
-        }
-
-        else if (
-          erro &&
-          erro.name === "NotReadableError"
-        ) {
-
-          mostrarErro(
-            "A câmera está sendo usada por outro aplicativo. Feche outros aplicativos e tente novamente."
-          );
-
-        }
-
-        else {
-
-          mostrarErro(
-            "Não foi possível abrir a câmera."
-          );
-
-        }
-
-      }
-
-    }
-
-
-    /*
-     * LEITURA DO CÓDIGO
-     */
-    function iniciarLeitura() {
-
-      if (
-        !leitor ||
-        !lendo
-      ) {
-
-        return;
-      }
-
-
-      const video =
-        document.getElementById("video");
-
-
-      leitor.decodeFromVideoElementContinuously(
-
-        video,
-
-        function(resultado, erro) {
-
-          if (
-            !lendo ||
-            codigoEncontrado
-          ) {
-
-            return;
-          }
-
-
-          if (resultado) {
-
-            let codigo = "";
-
+          function(resultado, erro) {
 
             if (
-              typeof resultado.getText ===
-              "function"
+              !lendo ||
+              codigoEncontrado
             ) {
 
-              codigo =
-                resultado.getText();
-
-            }
-
-            else {
-
-              codigo =
-                resultado.text || "";
-
+              return;
             }
 
 
-            codigo =
-              String(codigo).trim();
+            if (resultado) {
+
+              let codigo =
+                "";
 
 
-            if (codigo) {
+              if (
+                typeof resultado.getText ===
+                "function"
+              ) {
+
+                codigo =
+                  resultado.getText();
+
+              }
+
+              else {
+
+                codigo =
+                  resultado.text || "";
+
+              }
+
+
+              codigo =
+                String(codigo).trim();
+
+
+              /*
+               * Só aceita leitura com tamanho
+               * maior que 8 caracteres.
+               *
+               * Isso impede pegar somente
+               * um EAN-8 incompleto.
+               */
+              if (
+                codigo.length <= 8
+              ) {
+
+                mostrarStatus(
+                  "Leitura parcial. Continue apontando para o código inteiro..."
+                );
+
+                return;
+              }
+
 
               codigoEncontrado = true;
 
@@ -552,27 +421,41 @@
 
           }
 
+        );
+
+      }
+      catch (erro) {
+
+        console.log(erro);
+
+        fecharScanner();
+
+
+        if (
+          erro.name ===
+          "NotAllowedError"
+        ) {
+
+          mostrarErro(
+            "Permita o acesso à câmera para este site."
+          );
+
         }
 
-      );
+        else {
+
+          mostrarErro(
+            "Não foi possível abrir a câmera."
+          );
+
+        }
+
+      }
 
     }
 
 
-    /*
-     * VOLTAR PARA O RAQUEL SEMIJOIAS
-     */
     function retornarCodigo(codigo) {
-
-      if (!URL_RETORNO) {
-
-        mostrarErro(
-          "Não foi possível voltar ao sistema."
-        );
-
-        return;
-      }
-
 
       const separador =
         URL_RETORNO.includes("?")
@@ -594,38 +477,6 @@
     }
 
 
-    /*
-     * DIGITAÇÃO MANUAL
-     */
-    function usarCodigoManual() {
-
-      const codigo =
-        document
-          .getElementById("codigoManual")
-          .value
-          .trim();
-
-
-      if (!codigo) {
-
-        mostrarErro(
-          "Digite o código de barras."
-        );
-
-        return;
-      }
-
-
-      retornarCodigo(
-        codigo
-      );
-
-    }
-
-
-    /*
-     * FECHAR CÂMERA
-     */
     function fecharScanner() {
 
       lendo = false;
@@ -638,9 +489,7 @@
           leitor.reset();
 
         }
-        catch (erro) {
-
-        }
+        catch (erro) {}
 
       }
 
@@ -650,22 +499,15 @@
 
       if (stream) {
 
-        try {
+        stream
+          .getTracks()
+          .forEach(
+            function(track) {
 
-          stream
-            .getTracks()
-            .forEach(
-              function(track) {
+              track.stop();
 
-                track.stop();
-
-              }
-            );
-
-        }
-        catch (erro) {
-
-        }
+            }
+          );
 
       }
 
@@ -679,15 +521,7 @@
 
       if (video) {
 
-        try {
-
-          video.pause();
-
-        }
-        catch (erro) {
-
-        }
-
+        video.pause();
 
         video.srcObject = null;
 
@@ -710,18 +544,13 @@
     }
 
 
-    /*
-     * MENSAGENS
-     */
     function mostrarStatus(texto) {
 
       const campo =
         document.getElementById("status");
 
-
       campo.className =
         "status";
-
 
       campo.textContent =
         texto;
@@ -734,10 +563,8 @@
       const campo =
         document.getElementById("status");
 
-
       campo.className =
         "status erro";
-
 
       campo.textContent =
         texto;
@@ -750,10 +577,8 @@
       const campo =
         document.getElementById("status");
 
-
       campo.className =
         "status sucesso";
-
 
       campo.textContent =
         texto;
@@ -761,16 +586,9 @@
     }
 
 
-    /*
-     * FECHA A CÂMERA AO SAIR
-     */
     window.addEventListener(
       "beforeunload",
-      function() {
-
-        fecharScanner();
-
-      }
+      fecharScanner
     );
 
   </script>
