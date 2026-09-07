@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -10,10 +12,12 @@
 
   <title>Scanner - Raquel Semijoias</title>
 
-  <!-- Leitura de texto da etiqueta -->
-  <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script
+    src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js">
+  </script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -58,62 +62,83 @@
       color: white;
       text-align: center;
       font-size: 14px;
-      margin-bottom: 12px;
       line-height: 1.5;
+      margin-bottom: 12px;
     }
 
     .video-area {
       position: relative;
-      overflow: hidden;
-      border-radius: 12px;
       background: black;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     video {
       width: 100%;
-      min-height: 320px;
+      height: auto;
+      min-height: 300px;
       max-height: 500px;
       display: block;
-      object-fit: cover;
+      object-fit: contain;
       background: black;
     }
 
-    /*
-      A linha escrita da etiqueta deve ficar
-      dentro deste retângulo.
-    */
     .moldura {
       position: absolute;
-      left: 5%;
-      right: 5%;
-      top: 52%;
-      height: 24%;
+
+      left: 4%;
+      right: 4%;
+
+      top: 38%;
+
+      height: 38%;
+
       border: 3px solid white;
       border-radius: 10px;
+
       pointer-events: none;
     }
 
     .texto-moldura {
       position: absolute;
-      left: 8%;
-      right: 8%;
-      top: 44%;
-      color: white;
+
+      left: 5%;
+      right: 5%;
+
+      top: 29%;
+
       text-align: center;
+
+      color: white;
+
       font-size: 12px;
-      text-shadow: 0 1px 4px black;
+
+      text-shadow:
+        0 1px 5px black;
+
       pointer-events: none;
     }
 
     button {
       width: 100%;
+
       border: none;
+
       border-radius: 10px;
+
       padding: 14px;
+
       margin-top: 12px;
+
       font-size: 15px;
+
       font-weight: bold;
+
       cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
     }
 
     .principal {
@@ -133,16 +158,16 @@
 
     .status {
       background: white;
-      margin-top: 15px;
-      padding: 15px;
-      border-radius: 12px;
-      text-align: center;
-      line-height: 1.5;
-    }
 
-    .sucesso {
-      color: green;
-      font-weight: bold;
+      margin-top: 15px;
+
+      padding: 15px;
+
+      border-radius: 12px;
+
+      text-align: center;
+
+      line-height: 1.5;
     }
 
     .erro {
@@ -150,22 +175,31 @@
       font-weight: bold;
     }
 
+    .sucesso {
+      color: #168217;
+      font-weight: bold;
+    }
+
     .codigo {
       font-size: 20px;
-      font-weight: bold;
+
       margin-top: 8px;
+
       word-break: break-all;
     }
 
     .preco {
       font-size: 18px;
-      margin-top: 5px;
+      margin-top: 6px;
     }
 
     .manual {
       background: white;
+
       padding: 15px;
+
       border-radius: 12px;
+
       margin-top: 15px;
     }
 
@@ -175,86 +209,130 @@
 
     input {
       width: 100%;
+
       padding: 13px;
+
       border: 1px solid #ccc;
+
       border-radius: 9px;
+
       font-size: 16px;
+
       text-transform: uppercase;
     }
 
     canvas {
       display: none;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
   <div class="topo">
+
     <h1>📷 Scanner</h1>
+
     <p>Raquel Semijoias</p>
+
   </div>
+
 
   <div class="conteudo">
 
+
     <div class="camera-box">
 
+
       <div class="instrucao">
-        Enquadre principalmente a <b>linha escrita abaixo do código de barras</b>.
+
+        Não precisa aproximar demais.
+
+        <br>
+
+        Deixe a etiqueta na distância em que
+        os caracteres fiquem mais nítidos.
+
       </div>
 
+
       <div class="video-area">
+
 
         <video
           id="video"
           autoplay
           muted
-          playsinline
-        ></video>
+          playsinline>
+        </video>
+
 
         <div class="texto-moldura">
-          POSICIONE O CÓDIGO ESCRITO AQUI
+
+          COLOQUE A ETIQUETA INTEIRA NESTA ÁREA
+
         </div>
+
 
         <div class="moldura"></div>
 
+
       </div>
+
 
       <button
         class="principal"
-        onclick="abrirCamera()"
-      >
+        onclick="abrirCamera()">
+
         📷 Abrir câmera
+
       </button>
+
 
       <button
         id="btnCapturar"
         class="capturar"
         onclick="capturarEtiqueta()"
-        disabled
-      >
+        disabled>
+
         🔎 Ler etiqueta
+
       </button>
+
 
       <button
         class="secundario"
-        onclick="fecharCamera()"
-      >
+        onclick="fecharCamera()">
+
         ✕ Fechar câmera
+
       </button>
 
+
     </div>
+
 
     <div
       id="status"
-      class="status"
-    >
-      Abra a câmera e posicione a linha escrita da etiqueta dentro da moldura.
+      class="status">
+
+      Abra a câmera e coloque a etiqueta
+      inteira dentro do retângulo.
+
     </div>
+
 
     <div class="manual">
 
-      <h3>Digitar código manualmente</h3>
+
+      <h3>
+        Digitar código manualmente
+      </h3>
+
 
       <input
         id="codigoManual"
@@ -262,32 +340,47 @@
         placeholder="Ex.: 23118843AT04890"
       >
 
+
       <button
         class="principal"
-        onclick="usarCodigoManual()"
-      >
+        onclick="usarCodigoManual()">
+
         Usar código
+
       </button>
+
 
     </div>
 
+
     <canvas id="canvas"></canvas>
+
 
   </div>
 
+
   <script>
 
+
     let stream = null;
+
     let processando = false;
 
+
     const parametros =
-      new URLSearchParams(window.location.search);
+      new URLSearchParams(
+        window.location.search
+      );
+
 
     const URL_RETORNO =
-      parametros.get("retorno");
+      parametros.get(
+        "retorno"
+      );
 
 
     async function abrirCamera() {
+
 
       if (!URL_RETORNO) {
 
@@ -296,7 +389,9 @@
         );
 
         return;
+
       }
+
 
       if (
         !navigator.mediaDevices ||
@@ -308,6 +403,7 @@
         );
 
         return;
+
       }
 
 
@@ -315,6 +411,7 @@
 
 
       try {
+
 
         stream =
           await navigator.mediaDevices.getUserMedia({
@@ -331,10 +428,6 @@
 
               height: {
                 ideal: 1080
-              },
-
-              focusMode: {
-                ideal: "continuous"
               }
 
             },
@@ -345,29 +438,53 @@
 
 
         const video =
-          document.getElementById("video");
+          document.getElementById(
+            "video"
+          );
 
-        video.srcObject = stream;
+
+        video.srcObject =
+          stream;
+
 
         await video.play();
 
 
-        document.getElementById(
-          "btnCapturar"
-        ).disabled = false;
+        tentarFocoAutomatico();
+
+
+        document
+          .getElementById(
+            "btnCapturar"
+          )
+          .disabled =
+          false;
 
 
         mostrarStatus(
-          "Câmera aberta. Aproxime a etiqueta e coloque a linha escrita dentro da moldura."
+
+          "Câmera aberta.<br><br>" +
+
+          "Afaste ou aproxime até que os números e letras fiquem bem definidos.<br><br>" +
+
+          "Depois toque em <b>Ler etiqueta</b>."
+
         );
 
+
       }
+
       catch (erro) {
 
-        console.log(erro);
+
+        console.log(
+          erro
+        );
+
 
         if (
-          erro.name === "NotAllowedError"
+          erro.name ===
+          "NotAllowedError"
         ) {
 
           mostrarErro(
@@ -375,6 +492,7 @@
           );
 
         }
+
         else {
 
           mostrarErro(
@@ -383,12 +501,76 @@
 
         }
 
+
       }
+
 
     }
 
 
+
+    async function tentarFocoAutomatico() {
+
+
+      try {
+
+
+        const track =
+          stream
+            .getVideoTracks()[0];
+
+
+        if (!track) {
+          return;
+        }
+
+
+        const capabilities =
+          track.getCapabilities
+            ? track.getCapabilities()
+            : {};
+
+
+        if (
+          capabilities.focusMode &&
+          capabilities.focusMode.includes(
+            "continuous"
+          )
+        ) {
+
+          await track.applyConstraints({
+
+            advanced: [
+
+              {
+                focusMode:
+                  "continuous"
+              }
+
+            ]
+
+          });
+
+        }
+
+
+      }
+
+      catch (erro) {
+
+        console.log(
+          "Foco automático não disponível."
+        );
+
+      }
+
+
+    }
+
+
+
     async function capturarEtiqueta() {
+
 
       if (processando) {
         return;
@@ -396,7 +578,9 @@
 
 
       const video =
-        document.getElementById("video");
+        document.getElementById(
+          "video"
+        );
 
 
       if (
@@ -409,122 +593,196 @@
         );
 
         return;
+
       }
 
 
-      processando = true;
+      processando =
+        true;
 
 
-      document.getElementById(
-        "btnCapturar"
-      ).disabled = true;
+      document
+        .getElementById(
+          "btnCapturar"
+        )
+        .disabled =
+        true;
 
 
       mostrarStatus(
-        "🔎 Lendo a etiqueta... aguarde alguns segundos."
+        "🔎 Preparando a imagem..."
       );
 
 
       try {
 
+
         const canvas =
-          document.getElementById("canvas");
+          document.getElementById(
+            "canvas"
+          );
+
 
         const ctx =
-          canvas.getContext("2d");
+          canvas.getContext(
+            "2d",
+            {
+              willReadFrequently: true
+            }
+          );
 
 
         /*
-         * Capturamos principalmente a região
-         * central/inferior onde está a linha
-         * escrita abaixo do código de barras.
+         * Agora usamos quase toda a imagem.
+         *
+         * Isso evita o problema de o
+         * retângulo visual não coincidir
+         * com o recorte da câmera.
          */
+
+
         const larguraOriginal =
           video.videoWidth;
+
 
         const alturaOriginal =
           video.videoHeight;
 
 
+        /*
+         * Retiramos somente uma pequena
+         * margem das bordas.
+         */
+
+
         const x =
           Math.floor(
-            larguraOriginal * 0.05
+            larguraOriginal * 0.02
           );
+
 
         const y =
           Math.floor(
-            alturaOriginal * 0.45
+            alturaOriginal * 0.15
           );
+
 
         const largura =
           Math.floor(
-            larguraOriginal * 0.90
+            larguraOriginal * 0.96
           );
+
 
         const altura =
           Math.floor(
-            alturaOriginal * 0.35
+            alturaOriginal * 0.70
           );
 
 
         /*
-         * Aumentamos a imagem para ajudar
-         * o reconhecimento das letras pequenas.
+         * Ampliação digital.
+         *
+         * Mesmo estando um pouco distante,
+         * o texto será aumentado antes
+         * de chegar ao OCR.
          */
+
+
+        const escala =
+          2;
+
+
         canvas.width =
-          largura * 2;
+          largura * escala;
+
 
         canvas.height =
-          altura * 2;
+          altura * escala;
 
 
         ctx.drawImage(
+
           video,
+
           x,
           y,
+
           largura,
           altura,
+
           0,
           0,
+
           canvas.width,
           canvas.height
+
         );
 
 
-        melhorarImagem(
+        melhorarImagemSuave(
+
           ctx,
+
           canvas.width,
+
           canvas.height
+
+        );
+
+
+        mostrarStatus(
+          "🔎 Lendo números e letras..."
         );
 
 
         const resultado =
           await Tesseract.recognize(
+
             canvas,
+
             "eng",
+
             {
-              logger: function(m) {
 
-                if (
-                  m.status ===
-                  "recognizing text"
-                ) {
+              logger:
+                function(m) {
 
-                  const progresso =
-                    Math.round(
-                      (m.progress || 0) * 100
+
+                  if (
+                    m.status ===
+                    "recognizing text"
+                  ) {
+
+
+                    const progresso =
+                      Math.round(
+                        (m.progress || 0) *
+                        100
+                      );
+
+
+                    mostrarStatus(
+
+                      "🔎 Lendo etiqueta... " +
+                      progresso +
+                      "%"
+
                     );
 
-                  mostrarStatus(
-                    "🔎 Lendo etiqueta... " +
-                    progresso +
-                    "%"
-                  );
 
-                }
+                  }
 
-              }
+
+                },
+
+              tessedit_char_whitelist:
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+
+              preserve_interword_spaces:
+                "1"
+
             }
+
           );
 
 
@@ -533,43 +791,66 @@
 
 
         console.log(
-          "Texto OCR:",
+          "OCR ORIGINAL:",
           texto
         );
 
 
         const codigo =
-          extrairCodigo(texto);
+          extrairCodigo(
+            texto
+          );
 
 
         if (!codigo) {
 
+
           mostrarErro(
-            "Não consegui identificar o código completo. Aproxime um pouco mais a etiqueta, deixe a linha escrita bem nítida e tente novamente."
+
+            "Ainda não consegui identificar o código completo.<br><br>" +
+
+            "Não aproxime até embaçar.<br><br>" +
+
+            "Deixe a etiqueta na distância em que os caracteres estejam mais nítidos e tente novamente."
+
           );
 
 
-          processando = false;
+          processando =
+            false;
 
-          document.getElementById(
-            "btnCapturar"
-          ).disabled = false;
+
+          document
+            .getElementById(
+              "btnCapturar"
+            )
+            .disabled =
+            false;
+
 
           return;
+
         }
 
 
         const preco =
-          calcularPreco(codigo);
+          calcularPreco(
+            codigo
+          );
 
 
         mostrarSucesso(
+
           codigo,
+
           preco
+
         );
 
 
-        if (navigator.vibrate) {
+        if (
+          navigator.vibrate
+        ) {
 
           navigator.vibrate(
             [100, 60, 100]
@@ -582,6 +863,7 @@
 
 
         setTimeout(
+
           function() {
 
             retornarCodigo(
@@ -589,43 +871,63 @@
             );
 
           },
+
           1200
+
         );
 
+
       }
+
       catch (erro) {
 
-        console.log(erro);
 
-        mostrarErro(
-          "Ocorreu um erro ao tentar ler a etiqueta. Tente novamente."
+        console.log(
+          erro
         );
 
 
-        processando = false;
+        mostrarErro(
+
+          "Ocorreu um erro durante a leitura. Tente novamente."
+
+        );
 
 
-        document.getElementById(
-          "btnCapturar"
-        ).disabled = false;
+        processando =
+          false;
+
+
+        document
+          .getElementById(
+            "btnCapturar"
+          )
+          .disabled =
+          false;
+
 
       }
+
 
     }
 
 
-    function melhorarImagem(
+
+    function melhorarImagemSuave(
       ctx,
       largura,
       altura
     ) {
 
+
       const imagem =
         ctx.getImageData(
+
           0,
           0,
           largura,
           altura
+
         );
 
 
@@ -639,126 +941,240 @@
         i += 4
       ) {
 
-        const cinza =
-          (
-            dados[i] +
-            dados[i + 1] +
-            dados[i + 2]
-          ) / 3;
+
+        /*
+         * Converte para cinza,
+         * mas sem transformar tudo
+         * em preto e branco puro.
+         */
+
+
+        let cinza =
+
+          dados[i] * 0.299 +
+
+          dados[i + 1] * 0.587 +
+
+          dados[i + 2] * 0.114;
 
 
         /*
-         * Alto contraste.
+         * Contraste leve.
          */
-        const valor =
-          cinza > 145
-            ? 255
-            : 0;
+
+
+        cinza =
+          (cinza - 128) *
+          1.4 +
+          128;
+
+
+        cinza =
+          Math.max(
+            0,
+            Math.min(
+              255,
+              cinza
+            )
+          );
 
 
         dados[i] =
-          valor;
+          cinza;
+
 
         dados[i + 1] =
-          valor;
+          cinza;
+
 
         dados[i + 2] =
-          valor;
+          cinza;
+
 
       }
 
 
       ctx.putImageData(
+
         imagem,
+
         0,
         0
+
       );
+
 
     }
 
 
+
     function extrairCodigo(texto) {
+
+
+      /*
+       * Coloca tudo em maiúsculo.
+       */
+
 
       let limpo =
         String(texto)
-          .toUpperCase()
-          .replace(/\s+/g, "")
-          .replace(/[^A-Z0-9]/g, "");
+          .toUpperCase();
+
+
+      /*
+       * Remove espaços, linhas e
+       * símbolos estranhos.
+       */
+
+
+      limpo =
+        limpo.replace(
+          /[^A-Z0-9]/g,
+          ""
+        );
 
 
       console.log(
-        "Texto limpo:",
+        "OCR LIMPO:",
         limpo
       );
 
 
       /*
-       * Procuramos:
+       * Primeiro procuramos códigos
+       * com:
        *
-       * 8 números iniciais
+       * 8 números
        * +
-       * letras/números opcionais
+       * 0 a 5 letras
        * +
-       * 5 números finais
-       *
-       * Exemplos aceitos:
-       *
-       * 23118843AT04890
-       * 2311884304890
-       * 12345678AP07290
-       * 12345678ABC05690
+       * 5 números
        */
 
 
-      const correspondencias =
+      let encontrados =
         limpo.match(
-          /\d{8}[A-Z0-9]{0,8}\d{5}/g
+          /\d{8}[A-Z]{0,5}\d{5}/g
         );
 
 
       if (
-        !correspondencias ||
-        correspondencias.length === 0
+        encontrados &&
+        encontrados.length
       ) {
 
-        return "";
+
+        encontrados.sort(
+
+          function(a, b) {
+
+            return (
+              Math.abs(
+                a.length - 15
+              ) -
+
+              Math.abs(
+                b.length - 15
+              )
+            );
+
+          }
+
+        );
+
+
+        return encontrados[0];
+
       }
 
 
       /*
-       * Damos preferência ao código
-       * de tamanho mais plausível.
+       * Segunda tentativa.
+       *
+       * O OCR frequentemente confunde
+       * zero com letra O.
+       *
+       * Também pode confundir:
+       * I -> 1
+       * L -> 1
+       * S -> 5
+       * B -> 8
+       *
+       * Aqui fazemos uma correção
+       * somente para tentar localizar
+       * as partes numéricas.
        */
-      correspondencias.sort(
-        function(a, b) {
-
-          return (
-            Math.abs(a.length - 15) -
-            Math.abs(b.length - 15)
-          );
-
-        }
-      );
 
 
-      return correspondencias[0];
+      let corrigido =
+        limpo;
+
+
+      corrigido =
+        corrigido
+          .replace(/O/g, "0")
+          .replace(/I/g, "1")
+          .replace(/L/g, "1");
+
+
+      encontrados =
+        corrigido.match(
+          /\d{8}[A-Z0-9]{0,5}\d{5}/g
+        );
+
+
+      if (
+        encontrados &&
+        encontrados.length
+      ) {
+
+
+        encontrados.sort(
+
+          function(a, b) {
+
+            return (
+              Math.abs(
+                a.length - 15
+              ) -
+
+              Math.abs(
+                b.length - 15
+              )
+            );
+
+          }
+
+        );
+
+
+        return encontrados[0];
+
+      }
+
+
+      return "";
+
 
     }
 
 
-    function calcularPreco(codigo) {
 
-      if (!codigo) {
-        return "";
-      }
+    function calcularPreco(
+      codigo
+    ) {
 
 
       const final =
-        codigo.slice(-5);
+        codigo.slice(
+          -5
+        );
 
 
       if (
-        !/^\d{5}$/.test(final)
+        !/^\d{5}$/.test(
+          final
+        )
       ) {
 
         return "";
@@ -767,19 +1183,33 @@
 
 
       return (
-        Number(final) / 100
+
+        Number(final) /
+        100
+
       ).toLocaleString(
+
         "pt-BR",
+
         {
-          style: "currency",
-          currency: "BRL"
+
+          style:
+            "currency",
+
+          currency:
+            "BRL"
+
         }
+
       );
+
 
     }
 
 
+
     function usarCodigoManual() {
+
 
       let codigo =
         document
@@ -789,16 +1219,22 @@
           .value
           .trim()
           .toUpperCase()
-          .replace(/\s+/g, "");
+          .replace(
+            /\s+/g,
+            ""
+          );
 
 
       if (!codigo) {
+
 
         mostrarErro(
           "Digite o código da etiqueta."
         );
 
+
         return;
+
       }
 
 
@@ -806,27 +1242,37 @@
         codigo.length < 13
       ) {
 
+
         mostrarErro(
           "O código parece incompleto."
         );
 
+
         return;
+
       }
 
 
       const final =
-        codigo.slice(-5);
+        codigo.slice(
+          -5
+        );
 
 
       if (
-        !/^\d{5}$/.test(final)
+        !/^\d{5}$/.test(
+          final
+        )
       ) {
+
 
         mostrarErro(
           "Os últimos 5 caracteres precisam ser números."
         );
 
+
         return;
+
       }
 
 
@@ -834,18 +1280,26 @@
         codigo
       );
 
+
     }
 
 
-    function retornarCodigo(codigo) {
+
+    function retornarCodigo(
+      codigo
+    ) {
+
 
       if (!URL_RETORNO) {
+
 
         mostrarErro(
           "Não foi possível retornar ao sistema."
         );
 
+
         return;
+
       }
 
 
@@ -856,10 +1310,15 @@
 
 
       const destino =
+
         URL_RETORNO +
+
         separador +
+
         "tela=produto" +
+
         "&codigo=" +
+
         encodeURIComponent(
           codigo
         );
@@ -868,27 +1327,35 @@
       window.location.href =
         destino;
 
+
     }
+
 
 
     function fecharCamera() {
 
+
       if (stream) {
+
 
         stream
           .getTracks()
           .forEach(
+
             function(track) {
 
               track.stop();
 
             }
+
           );
+
 
       }
 
 
-      stream = null;
+      stream =
+        null;
 
 
       const video =
@@ -901,7 +1368,8 @@
 
         video.pause();
 
-        video.srcObject = null;
+        video.srcObject =
+          null;
 
       }
 
@@ -914,43 +1382,60 @@
 
       if (botao) {
 
-        botao.disabled = true;
+        botao.disabled =
+          true;
 
       }
+
 
     }
 
 
-    function mostrarStatus(texto) {
+
+    function mostrarStatus(
+      texto
+    ) {
+
 
       const campo =
         document.getElementById(
           "status"
         );
+
 
       campo.className =
         "status";
 
+
       campo.innerHTML =
         texto;
+
 
     }
 
 
-    function mostrarErro(texto) {
+
+    function mostrarErro(
+      texto
+    ) {
+
 
       const campo =
         document.getElementById(
           "status"
         );
 
+
       campo.className =
         "status erro";
+
 
       campo.innerHTML =
         texto;
 
+
     }
+
 
 
     function mostrarSucesso(
@@ -958,37 +1443,60 @@
       preco
     ) {
 
+
       const campo =
         document.getElementById(
           "status"
         );
+
 
       campo.className =
         "status sucesso";
 
 
       campo.innerHTML =
+
         "✅ Código reconhecido" +
+
         "<div class='codigo'>" +
+
         codigo +
+
         "</div>" +
+
         (
+
           preco
-            ? "<div class='preco'>" +
-              preco +
-              "</div>"
-            : ""
+
+            ?
+
+            "<div class='preco'>" +
+            preco +
+            "</div>"
+
+            :
+
+            ""
+
         );
+
 
     }
 
 
+
     window.addEventListener(
+
       "beforeunload",
+
       fecharCamera
+
     );
+
 
   </script>
 
+
 </body>
+
 </html>
