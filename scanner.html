@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
 
@@ -11,7 +10,8 @@
 
   <title>Scanner - Raquel Semijoias</title>
 
-  <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <!-- Leitura de texto da etiqueta -->
+  <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     * {
@@ -26,10 +26,10 @@
     }
 
     .topo {
-      background: #B76E79;
+      background: #b76e79;
       color: white;
-      padding: 20px 15px;
       text-align: center;
+      padding: 18px;
     }
 
     .topo h1 {
@@ -38,19 +38,19 @@
     }
 
     .topo p {
-      margin: 5px 0 0;
+      margin: 6px 0 0;
       font-size: 13px;
     }
 
     .conteudo {
       max-width: 650px;
       margin: auto;
-      padding: 16px;
+      padding: 15px;
     }
 
-    .scanner {
+    .camera-box {
       background: #222;
-      border-radius: 14px;
+      border-radius: 15px;
       padding: 12px;
     }
 
@@ -58,72 +58,72 @@
       color: white;
       text-align: center;
       font-size: 14px;
-      margin: 5px 0 12px;
+      margin-bottom: 12px;
+      line-height: 1.5;
     }
 
     .video-area {
       position: relative;
-      width: 100%;
       overflow: hidden;
-      border-radius: 10px;
+      border-radius: 12px;
       background: black;
     }
 
     video {
-      display: block;
       width: 100%;
-      min-height: 300px;
+      min-height: 320px;
       max-height: 500px;
+      display: block;
       object-fit: cover;
       background: black;
     }
 
+    /*
+      A linha escrita da etiqueta deve ficar
+      dentro deste retângulo.
+    */
     .moldura {
       position: absolute;
       left: 5%;
       right: 5%;
-      top: 35%;
-      height: 30%;
+      top: 52%;
+      height: 24%;
       border: 3px solid white;
       border-radius: 10px;
       pointer-events: none;
     }
 
-    .linha {
+    .texto-moldura {
       position: absolute;
       left: 8%;
       right: 8%;
-      top: 50%;
-      height: 3px;
-      background: white;
-      box-shadow: 0 0 10px white;
+      top: 44%;
+      color: white;
+      text-align: center;
+      font-size: 12px;
+      text-shadow: 0 1px 4px black;
       pointer-events: none;
     }
 
-    .status {
-      margin-top: 15px;
-      background: white;
-      padding: 14px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: bold;
-      line-height: 1.5;
-    }
-
-    .botao {
+    button {
       width: 100%;
       border: none;
       border-radius: 10px;
       padding: 14px;
+      margin-top: 12px;
       font-size: 15px;
       font-weight: bold;
-      margin-top: 12px;
       cursor: pointer;
     }
 
     .principal {
-      background: #B76E79;
+      background: #b76e79;
       color: white;
+    }
+
+    .capturar {
+      background: #d8a8af;
+      color: #442d31;
     }
 
     .secundario {
@@ -131,12 +131,59 @@
       color: #72535a;
     }
 
-    .erro {
-      color: #b00020;
+    .status {
+      background: white;
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      line-height: 1.5;
     }
 
     .sucesso {
-      color: #168217;
+      color: green;
+      font-weight: bold;
+    }
+
+    .erro {
+      color: #b00020;
+      font-weight: bold;
+    }
+
+    .codigo {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .preco {
+      font-size: 18px;
+      margin-top: 5px;
+    }
+
+    .manual {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+
+    .manual h3 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+
+    canvas {
+      display: none;
     }
   </style>
 </head>
@@ -150,10 +197,10 @@
 
   <div class="conteudo">
 
-    <div class="scanner">
+    <div class="camera-box">
 
       <div class="instrucao">
-        Centralize o código inteiro dentro da moldura
+        Enquadre principalmente a <b>linha escrita abaixo do código de barras</b>.
       </div>
 
       <div class="video-area">
@@ -165,22 +212,33 @@
           playsinline
         ></video>
 
+        <div class="texto-moldura">
+          POSICIONE O CÓDIGO ESCRITO AQUI
+        </div>
+
         <div class="moldura"></div>
-        <div class="linha"></div>
 
       </div>
 
       <button
-        id="botaoIniciar"
-        class="botao principal"
-        onclick="iniciarScanner()"
+        class="principal"
+        onclick="abrirCamera()"
       >
         📷 Abrir câmera
       </button>
 
       <button
-        class="botao secundario"
-        onclick="fecharScanner()"
+        id="btnCapturar"
+        class="capturar"
+        onclick="capturarEtiqueta()"
+        disabled
+      >
+        🔎 Ler etiqueta
+      </button>
+
+      <button
+        class="secundario"
+        onclick="fecharCamera()"
       >
         ✕ Fechar câmera
       </button>
@@ -191,52 +249,69 @@
       id="status"
       class="status"
     >
-      Toque em "Abrir câmera".
+      Abra a câmera e posicione a linha escrita da etiqueta dentro da moldura.
     </div>
+
+    <div class="manual">
+
+      <h3>Digitar código manualmente</h3>
+
+      <input
+        id="codigoManual"
+        type="text"
+        placeholder="Ex.: 23118843AT04890"
+      >
+
+      <button
+        class="principal"
+        onclick="usarCodigoManual()"
+      >
+        Usar código
+      </button>
+
+    </div>
+
+    <canvas id="canvas"></canvas>
 
   </div>
 
   <script>
 
-    let leitor = null;
     let stream = null;
-    let lendo = false;
-    let codigoEncontrado = false;
+    let processando = false;
 
     const parametros =
-      new URLSearchParams(
-        window.location.search
-      );
+      new URLSearchParams(window.location.search);
 
     const URL_RETORNO =
       parametros.get("retorno");
 
 
-    async function iniciarScanner() {
+    async function abrirCamera() {
 
       if (!URL_RETORNO) {
 
         mostrarErro(
-          "Abra o scanner pelo sistema Raquel Semijoias."
+          "Abra o scanner através do sistema Raquel Semijoias."
         );
 
         return;
       }
 
-
-      if (typeof ZXing === "undefined") {
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
 
         mostrarErro(
-          "O leitor não carregou. Atualize a página."
+          "Este navegador não permite acesso à câmera."
         );
 
         return;
       }
 
 
-      fecharScanner();
-
-      codigoEncontrado = false;
+      fecharCamera();
 
 
       try {
@@ -256,6 +331,10 @@
 
               height: {
                 ideal: 1080
+              },
+
+              focusMode: {
+                ideal: "continuous"
               }
 
             },
@@ -268,159 +347,18 @@
         const video =
           document.getElementById("video");
 
-
         video.srcObject = stream;
-
-        video.setAttribute(
-          "playsinline",
-          "true"
-        );
 
         await video.play();
 
 
-        lendo = true;
+        document.getElementById(
+          "btnCapturar"
+        ).disabled = false;
 
 
         mostrarStatus(
-          "Câmera aberta. Enquadre o código COMPLETO."
-        );
-
-
-        /*
-         * =================================================
-         * FORÇA FORMATO CODE 128
-         * =================================================
-         */
-
-        const hints =
-          new Map();
-
-
-        const formatos =
-          [
-            ZXing.BarcodeFormat.CODE_128,
-            ZXing.BarcodeFormat.CODE_39,
-            ZXing.BarcodeFormat.CODE_93
-          ];
-
-
-        hints.set(
-          ZXing.DecodeHintType.POSSIBLE_FORMATS,
-          formatos
-        );
-
-
-        hints.set(
-          ZXing.DecodeHintType.TRY_HARDER,
-          true
-        );
-
-
-        leitor =
-          new ZXing.BrowserMultiFormatReader(
-            hints
-          );
-
-
-        leitor.decodeFromVideoElementContinuously(
-
-          video,
-
-          function(resultado, erro) {
-
-            if (
-              !lendo ||
-              codigoEncontrado
-            ) {
-
-              return;
-            }
-
-
-            if (resultado) {
-
-              let codigo =
-                "";
-
-
-              if (
-                typeof resultado.getText ===
-                "function"
-              ) {
-
-                codigo =
-                  resultado.getText();
-
-              }
-
-              else {
-
-                codigo =
-                  resultado.text || "";
-
-              }
-
-
-              codigo =
-                String(codigo).trim();
-
-
-              /*
-               * Só aceita leitura com tamanho
-               * maior que 8 caracteres.
-               *
-               * Isso impede pegar somente
-               * um EAN-8 incompleto.
-               */
-              if (
-                codigo.length <= 8
-              ) {
-
-                mostrarStatus(
-                  "Leitura parcial. Continue apontando para o código inteiro..."
-                );
-
-                return;
-              }
-
-
-              codigoEncontrado = true;
-
-
-              if (navigator.vibrate) {
-
-                navigator.vibrate(
-                  [100, 60, 100]
-                );
-
-              }
-
-
-              mostrarSucesso(
-                "✅ Código encontrado: " +
-                codigo
-              );
-
-
-              fecharScanner();
-
-
-              setTimeout(
-                function() {
-
-                  retornarCodigo(
-                    codigo
-                  );
-
-                },
-                700
-              );
-
-            }
-
-          }
-
+          "Câmera aberta. Aproxime a etiqueta e coloque a linha escrita dentro da moldura."
         );
 
       }
@@ -428,20 +366,15 @@
 
         console.log(erro);
 
-        fecharScanner();
-
-
         if (
-          erro.name ===
-          "NotAllowedError"
+          erro.name === "NotAllowedError"
         ) {
 
           mostrarErro(
-            "Permita o acesso à câmera para este site."
+            "Permita o acesso à câmera para continuar."
           );
 
         }
-
         else {
 
           mostrarErro(
@@ -455,7 +388,466 @@
     }
 
 
+    async function capturarEtiqueta() {
+
+      if (processando) {
+        return;
+      }
+
+
+      const video =
+        document.getElementById("video");
+
+
+      if (
+        !video.videoWidth ||
+        !video.videoHeight
+      ) {
+
+        mostrarErro(
+          "A câmera ainda não está pronta."
+        );
+
+        return;
+      }
+
+
+      processando = true;
+
+
+      document.getElementById(
+        "btnCapturar"
+      ).disabled = true;
+
+
+      mostrarStatus(
+        "🔎 Lendo a etiqueta... aguarde alguns segundos."
+      );
+
+
+      try {
+
+        const canvas =
+          document.getElementById("canvas");
+
+        const ctx =
+          canvas.getContext("2d");
+
+
+        /*
+         * Capturamos principalmente a região
+         * central/inferior onde está a linha
+         * escrita abaixo do código de barras.
+         */
+        const larguraOriginal =
+          video.videoWidth;
+
+        const alturaOriginal =
+          video.videoHeight;
+
+
+        const x =
+          Math.floor(
+            larguraOriginal * 0.05
+          );
+
+        const y =
+          Math.floor(
+            alturaOriginal * 0.45
+          );
+
+        const largura =
+          Math.floor(
+            larguraOriginal * 0.90
+          );
+
+        const altura =
+          Math.floor(
+            alturaOriginal * 0.35
+          );
+
+
+        /*
+         * Aumentamos a imagem para ajudar
+         * o reconhecimento das letras pequenas.
+         */
+        canvas.width =
+          largura * 2;
+
+        canvas.height =
+          altura * 2;
+
+
+        ctx.drawImage(
+          video,
+          x,
+          y,
+          largura,
+          altura,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+        melhorarImagem(
+          ctx,
+          canvas.width,
+          canvas.height
+        );
+
+
+        const resultado =
+          await Tesseract.recognize(
+            canvas,
+            "eng",
+            {
+              logger: function(m) {
+
+                if (
+                  m.status ===
+                  "recognizing text"
+                ) {
+
+                  const progresso =
+                    Math.round(
+                      (m.progress || 0) * 100
+                    );
+
+                  mostrarStatus(
+                    "🔎 Lendo etiqueta... " +
+                    progresso +
+                    "%"
+                  );
+
+                }
+
+              }
+            }
+          );
+
+
+        const texto =
+          resultado.data.text || "";
+
+
+        console.log(
+          "Texto OCR:",
+          texto
+        );
+
+
+        const codigo =
+          extrairCodigo(texto);
+
+
+        if (!codigo) {
+
+          mostrarErro(
+            "Não consegui identificar o código completo. Aproxime um pouco mais a etiqueta, deixe a linha escrita bem nítida e tente novamente."
+          );
+
+
+          processando = false;
+
+          document.getElementById(
+            "btnCapturar"
+          ).disabled = false;
+
+          return;
+        }
+
+
+        const preco =
+          calcularPreco(codigo);
+
+
+        mostrarSucesso(
+          codigo,
+          preco
+        );
+
+
+        if (navigator.vibrate) {
+
+          navigator.vibrate(
+            [100, 60, 100]
+          );
+
+        }
+
+
+        fecharCamera();
+
+
+        setTimeout(
+          function() {
+
+            retornarCodigo(
+              codigo
+            );
+
+          },
+          1200
+        );
+
+      }
+      catch (erro) {
+
+        console.log(erro);
+
+        mostrarErro(
+          "Ocorreu um erro ao tentar ler a etiqueta. Tente novamente."
+        );
+
+
+        processando = false;
+
+
+        document.getElementById(
+          "btnCapturar"
+        ).disabled = false;
+
+      }
+
+    }
+
+
+    function melhorarImagem(
+      ctx,
+      largura,
+      altura
+    ) {
+
+      const imagem =
+        ctx.getImageData(
+          0,
+          0,
+          largura,
+          altura
+        );
+
+
+      const dados =
+        imagem.data;
+
+
+      for (
+        let i = 0;
+        i < dados.length;
+        i += 4
+      ) {
+
+        const cinza =
+          (
+            dados[i] +
+            dados[i + 1] +
+            dados[i + 2]
+          ) / 3;
+
+
+        /*
+         * Alto contraste.
+         */
+        const valor =
+          cinza > 145
+            ? 255
+            : 0;
+
+
+        dados[i] =
+          valor;
+
+        dados[i + 1] =
+          valor;
+
+        dados[i + 2] =
+          valor;
+
+      }
+
+
+      ctx.putImageData(
+        imagem,
+        0,
+        0
+      );
+
+    }
+
+
+    function extrairCodigo(texto) {
+
+      let limpo =
+        String(texto)
+          .toUpperCase()
+          .replace(/\s+/g, "")
+          .replace(/[^A-Z0-9]/g, "");
+
+
+      console.log(
+        "Texto limpo:",
+        limpo
+      );
+
+
+      /*
+       * Procuramos:
+       *
+       * 8 números iniciais
+       * +
+       * letras/números opcionais
+       * +
+       * 5 números finais
+       *
+       * Exemplos aceitos:
+       *
+       * 23118843AT04890
+       * 2311884304890
+       * 12345678AP07290
+       * 12345678ABC05690
+       */
+
+
+      const correspondencias =
+        limpo.match(
+          /\d{8}[A-Z0-9]{0,8}\d{5}/g
+        );
+
+
+      if (
+        !correspondencias ||
+        correspondencias.length === 0
+      ) {
+
+        return "";
+      }
+
+
+      /*
+       * Damos preferência ao código
+       * de tamanho mais plausível.
+       */
+      correspondencias.sort(
+        function(a, b) {
+
+          return (
+            Math.abs(a.length - 15) -
+            Math.abs(b.length - 15)
+          );
+
+        }
+      );
+
+
+      return correspondencias[0];
+
+    }
+
+
+    function calcularPreco(codigo) {
+
+      if (!codigo) {
+        return "";
+      }
+
+
+      const final =
+        codigo.slice(-5);
+
+
+      if (
+        !/^\d{5}$/.test(final)
+      ) {
+
+        return "";
+
+      }
+
+
+      return (
+        Number(final) / 100
+      ).toLocaleString(
+        "pt-BR",
+        {
+          style: "currency",
+          currency: "BRL"
+        }
+      );
+
+    }
+
+
+    function usarCodigoManual() {
+
+      let codigo =
+        document
+          .getElementById(
+            "codigoManual"
+          )
+          .value
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "");
+
+
+      if (!codigo) {
+
+        mostrarErro(
+          "Digite o código da etiqueta."
+        );
+
+        return;
+      }
+
+
+      if (
+        codigo.length < 13
+      ) {
+
+        mostrarErro(
+          "O código parece incompleto."
+        );
+
+        return;
+      }
+
+
+      const final =
+        codigo.slice(-5);
+
+
+      if (
+        !/^\d{5}$/.test(final)
+      ) {
+
+        mostrarErro(
+          "Os últimos 5 caracteres precisam ser números."
+        );
+
+        return;
+      }
+
+
+      retornarCodigo(
+        codigo
+      );
+
+    }
+
+
     function retornarCodigo(codigo) {
+
+      if (!URL_RETORNO) {
+
+        mostrarErro(
+          "Não foi possível retornar ao sistema."
+        );
+
+        return;
+      }
+
 
       const separador =
         URL_RETORNO.includes("?")
@@ -468,7 +860,9 @@
         separador +
         "tela=produto" +
         "&codigo=" +
-        encodeURIComponent(codigo);
+        encodeURIComponent(
+          codigo
+        );
 
 
       window.location.href =
@@ -477,25 +871,7 @@
     }
 
 
-    function fecharScanner() {
-
-      lendo = false;
-
-
-      if (leitor) {
-
-        try {
-
-          leitor.reset();
-
-        }
-        catch (erro) {}
-
-      }
-
-
-      leitor = null;
-
+    function fecharCamera() {
 
       if (stream) {
 
@@ -516,7 +892,9 @@
 
 
       const video =
-        document.getElementById("video");
+        document.getElementById(
+          "video"
+        );
 
 
       if (video) {
@@ -530,14 +908,13 @@
 
       const botao =
         document.getElementById(
-          "botaoIniciar"
+          "btnCapturar"
         );
 
 
       if (botao) {
 
-        botao.textContent =
-          "📷 Abrir câmera";
+        botao.disabled = true;
 
       }
 
@@ -547,12 +924,14 @@
     function mostrarStatus(texto) {
 
       const campo =
-        document.getElementById("status");
+        document.getElementById(
+          "status"
+        );
 
       campo.className =
         "status";
 
-      campo.textContent =
+      campo.innerHTML =
         texto;
 
     }
@@ -561,38 +940,55 @@
     function mostrarErro(texto) {
 
       const campo =
-        document.getElementById("status");
+        document.getElementById(
+          "status"
+        );
 
       campo.className =
         "status erro";
 
-      campo.textContent =
+      campo.innerHTML =
         texto;
 
     }
 
 
-    function mostrarSucesso(texto) {
+    function mostrarSucesso(
+      codigo,
+      preco
+    ) {
 
       const campo =
-        document.getElementById("status");
+        document.getElementById(
+          "status"
+        );
 
       campo.className =
         "status sucesso";
 
-      campo.textContent =
-        texto;
+
+      campo.innerHTML =
+        "✅ Código reconhecido" +
+        "<div class='codigo'>" +
+        codigo +
+        "</div>" +
+        (
+          preco
+            ? "<div class='preco'>" +
+              preco +
+              "</div>"
+            : ""
+        );
 
     }
 
 
     window.addEventListener(
       "beforeunload",
-      fecharScanner
+      fecharCamera
     );
 
   </script>
 
 </body>
-
 </html>
