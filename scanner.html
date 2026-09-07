@@ -1,7 +1,8 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -79,37 +80,29 @@
     }
 
     /*
-     * ÁREA EXATA QUE SERÁ LIDA PELO OCR
+     * =====================================================
+     * FAIXA DE LEITURA
+     * =====================================================
+     *
+     * Agora é MUITO mais estreita.
+     * Queremos somente os caracteres,
+     * sem as barras.
      */
+
     .moldura-leitura {
       position: absolute;
 
-      left: 5%;
-      right: 5%;
-
-      top: 55%;
-      height: 18%;
-
-      border: 3px solid #f3aab5;
-      border-radius: 8px;
-
-      box-shadow:
-        0 0 0 9999px rgba(0, 0, 0, 0.38);
-
-      pointer-events: none;
-    }
-
-    .linha-central {
-      position: absolute;
-
-      left: 8%;
-      right: 8%;
+      left: 6%;
+      right: 6%;
 
       top: 64%;
+      height: 10%;
 
-      height: 2px;
+      border: 3px solid #f3aab5;
+      border-radius: 7px;
 
-      background: rgba(255,255,255,0.7);
+      box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.42);
 
       pointer-events: none;
     }
@@ -120,14 +113,12 @@
       left: 5%;
       right: 5%;
 
-      top: 47%;
+      top: 55%;
 
       color: white;
 
       font-size: 12px;
-
       text-align: center;
-
       font-weight: bold;
 
       text-shadow:
@@ -138,19 +129,12 @@
 
     button {
       width: 100%;
-
       border: none;
-
       border-radius: 10px;
-
       padding: 14px;
-
       margin-top: 12px;
-
       font-size: 15px;
-
       font-weight: bold;
-
       cursor: pointer;
     }
 
@@ -175,17 +159,11 @@
 
     .status {
       background: white;
-
       margin-top: 15px;
-
       padding: 15px;
-
       border-radius: 12px;
-
       text-align: center;
-
       line-height: 1.5;
-
       word-break: break-word;
     }
 
@@ -200,75 +178,59 @@
     }
 
     .codigo {
-      font-size: 21px;
+      font-size: 22px;
       margin-top: 8px;
       word-break: break-all;
     }
 
     .preco {
       font-size: 19px;
-      margin-top: 5px;
+      margin-top: 6px;
     }
 
     .ocr {
       background: #f5eeee;
-
       color: #333;
-
       margin-top: 12px;
-
       padding: 12px;
-
       border-radius: 9px;
-
       font-weight: normal;
-
       word-break: break-all;
     }
 
     .preview-box {
       display: none;
-
       background: white;
-
       margin-top: 15px;
-
       padding: 12px;
-
       border-radius: 12px;
     }
 
     .preview-box h3 {
       margin: 0 0 8px;
-
       font-size: 14px;
-
       text-align: center;
     }
 
-    #canvas {
+    #canvasPreview {
       display: block;
-
       width: 100%;
-
-      max-height: 180px;
-
+      max-height: 150px;
       object-fit: contain;
-
       background: white;
-
       border: 1px solid #ddd;
-
       border-radius: 7px;
+    }
+
+    #canvasOriginal,
+    #canvasContraste {
+      display: none;
     }
 
     .manual {
       background: white;
-
       padding: 15px;
-
       border-radius: 12px;
-
       margin-top: 15px;
     }
 
@@ -278,22 +240,19 @@
 
     input {
       width: 100%;
-
       padding: 13px;
-
       border: 1px solid #ccc;
-
       border-radius: 9px;
-
       font-size: 16px;
-
       text-transform: uppercase;
     }
 
   </style>
+
 </head>
 
 <body>
+
 
   <div class="topo">
 
@@ -312,13 +271,17 @@
 
       <div class="instrucao">
 
-        Mantenha a etiqueta na distância em que
+        Deixe a etiqueta na distância em que
         a câmera consegue focar.
 
         <br><br>
 
-        Coloque <b>somente a linha escrita abaixo das barras</b>
+        Coloque <b>somente a linha de números e letras</b>
         dentro da faixa rosa.
+
+        <br>
+
+        As barras devem ficar acima dela.
 
       </div>
 
@@ -335,14 +298,13 @@
 
 
         <div class="aviso-moldura">
-          COLOQUE OS NÚMEROS E LETRAS NESTA FAIXA
+
+          SOMENTE OS NÚMEROS E LETRAS NESTA FAIXA
+
         </div>
 
 
         <div class="moldura-leitura"></div>
-
-
-        <div class="linha-central"></div>
 
 
       </div>
@@ -384,8 +346,8 @@
       id="status"
       class="status">
 
-      Abra a câmera e posicione a linha do código
-      dentro da faixa rosa.
+      Abra a câmera e coloque somente
+      a linha escrita dentro da faixa rosa.
 
     </div>
 
@@ -395,10 +357,10 @@
       class="preview-box">
 
       <h3>
-        📸 Área que o sistema tentou ler
+        📸 Exatamente o que o OCR está tentando ler
       </h3>
 
-      <canvas id="canvas"></canvas>
+      <canvas id="canvasPreview"></canvas>
 
     </div>
 
@@ -424,6 +386,11 @@
       </button>
 
     </div>
+
+
+    <canvas id="canvasOriginal"></canvas>
+
+    <canvas id="canvasContraste"></canvas>
 
 
   </div>
@@ -542,11 +509,9 @@
 
           "Câmera aberta.<br><br>" +
 
-          "Não aproxime até embaçar.<br><br>" +
+          "Mantenha a distância em que os caracteres ficam mais nítidos.<br><br>" +
 
-          "Mantenha a distância em que a etiqueta fica nítida e coloque " +
-
-          "<b>somente os caracteres escritos</b> dentro da faixa rosa."
+          "Coloque <b>somente a linha escrita</b> dentro da faixa rosa."
 
         );
 
@@ -589,7 +554,7 @@
 
     /*
      * =====================================================
-     * FOCO AUTOMÁTICO
+     * FOCO
      * =====================================================
      */
 
@@ -609,13 +574,13 @@
             .getVideoTracks()[0];
 
 
-        if (!track) {
-          return;
-        }
+        if (
+          !track ||
+          !track.getCapabilities
+        ) {
 
-
-        if (!track.getCapabilities) {
           return;
+
         }
 
 
@@ -654,8 +619,7 @@
 
 
         console.log(
-          "Foco contínuo não disponível.",
-          erro
+          "Foco contínuo não disponível."
         );
 
 
@@ -682,7 +646,7 @@
 
 
       mostrarStatus(
-        "🔎 Preparando o leitor..."
+        "🔎 Preparando leitor..."
       );
 
 
@@ -695,17 +659,16 @@
       await workerOcr.setParameters({
 
         /*
-         * PSM 7 =
-         * o Tesseract deve tratar a imagem
-         * como UMA ÚNICA LINHA DE TEXTO.
+         * Uma única linha de texto
          */
 
         tessedit_pageseg_mode:
-          "7",
+          Tesseract.PSM
+            ? Tesseract.PSM.SINGLE_LINE
+            : "7",
 
         /*
-         * Só permitimos caracteres que
-         * podem existir no código.
+         * Só caracteres permitidos
          */
 
         tessedit_char_whitelist:
@@ -725,7 +688,7 @@
 
     /*
      * =====================================================
-     * CAPTURAR ETIQUETA
+     * CAPTURAR
      * =====================================================
      */
 
@@ -770,21 +733,26 @@
 
 
       mostrarStatus(
-        "📸 Capturando somente a faixa do código..."
+        "📸 Capturando a linha escrita..."
       );
 
 
       try {
 
 
-        const canvas =
+        /*
+         * Canvas onde guardamos
+         * a captura normal.
+         */
+
+        const canvasOriginal =
           document.getElementById(
-            "canvas"
+            "canvasOriginal"
           );
 
 
-        const ctx =
-          canvas.getContext(
+        const ctxOriginal =
+          canvasOriginal.getContext(
             "2d",
             {
               willReadFrequently: true
@@ -792,91 +760,75 @@
           );
 
 
-        const larguraOriginal =
+        /*
+         * =================================================
+         * RECORTE IDÊNTICO À FAIXA ROSA
+         * =================================================
+         */
+
+        const larguraVideo =
           video.videoWidth;
 
 
-        const alturaOriginal =
+        const alturaVideo =
           video.videoHeight;
-
-
-        /*
-         * =================================================
-         * ESTE RECORTE CORRESPONDE À FAIXA ROSA
-         * =================================================
-         *
-         * esquerda: 5%
-         * topo: 55%
-         * largura: 90%
-         * altura: 18%
-         */
 
 
         const x =
           Math.floor(
-            larguraOriginal *
-            0.05
+            larguraVideo *
+            0.06
           );
 
 
         const y =
           Math.floor(
-            alturaOriginal *
-            0.55
+            alturaVideo *
+            0.64
           );
 
 
         const largura =
           Math.floor(
-            larguraOriginal *
-            0.90
+            larguraVideo *
+            0.88
           );
 
 
         const altura =
           Math.floor(
-            alturaOriginal *
-            0.18
+            alturaVideo *
+            0.10
           );
 
 
         /*
-         * AUMENTO DIGITAL
-         *
-         * A etiqueta pode ficar distante.
-         * Nós ampliamos a faixa 3 vezes
-         * antes de mandar para o OCR.
+         * AUMENTO DIGITAL 4X
          */
 
-
         const escala =
-          3;
+          4;
 
 
-        canvas.width =
+        canvasOriginal.width =
           largura *
           escala;
 
 
-        canvas.height =
+        canvasOriginal.height =
           altura *
           escala;
 
 
-        /*
-         * Melhor interpolação.
-         */
-
-
-        ctx.imageSmoothingEnabled =
+        ctxOriginal.imageSmoothingEnabled =
           true;
 
 
-        ctx.imageSmoothingQuality =
+        ctxOriginal.imageSmoothingQuality =
           "high";
 
 
-        ctx.drawImage(
+        ctxOriginal.drawImage(
 
           video,
 
@@ -889,16 +841,43 @@
           0,
           0,
 
-          canvas.width,
-          canvas.height
+          canvasOriginal.width,
+          canvasOriginal.height
 
         );
 
 
         /*
-         * Mostra para você exatamente
-         * a área capturada.
+         * =================================================
+         * MOSTRAR EXATAMENTE A CAPTURA
+         * =================================================
          */
+
+        const preview =
+          document.getElementById(
+            "canvasPreview"
+          );
+
+
+        preview.width =
+          canvasOriginal.width;
+
+
+        preview.height =
+          canvasOriginal.height;
+
+
+        const ctxPreview =
+          preview.getContext(
+            "2d"
+          );
+
+
+        ctxPreview.drawImage(
+          canvasOriginal,
+          0,
+          0
+        );
 
 
         document
@@ -910,34 +889,28 @@
 
 
         /*
-         * Melhora contraste sem destruir
-         * as letras pequenas.
+         * =================================================
+         * PRIMEIRA TENTATIVA
+         * IMAGEM ORIGINAL
+         * =================================================
          */
-
-
-        melhorarImagem(
-          ctx,
-          canvas.width,
-          canvas.height
-        );
-
-
-        mostrarStatus(
-          "🔎 Lendo a linha do código..."
-        );
-
 
         const worker =
           await prepararOcr();
 
 
-        const resultado =
+        mostrarStatus(
+          "🔎 Lendo números e letras..."
+        );
+
+
+        let resultado =
           await worker.recognize(
-            canvas
+            canvasOriginal
           );
 
 
-        const texto =
+        let texto =
           resultado.data.text || "";
 
 
@@ -947,84 +920,134 @@
         );
 
 
-        const textoLimpo =
-          limparTextoOcr(
+        let codigo =
+          analisarResultadoOcr(
             texto
           );
 
 
-        console.log(
-          "OCR LIMPO:",
-          textoLimpo
-        );
-
-
-        const codigo =
-          extrairCodigo(
-            textoLimpo
-          );
-
+        /*
+         * =================================================
+         * SEGUNDA TENTATIVA AUTOMÁTICA
+         * ALTO CONTRASTE
+         * =================================================
+         */
 
         if (!codigo) {
 
 
-          mostrarErro(
+          mostrarStatus(
+            "🔎 Fazendo uma segunda tentativa..."
+          );
 
-            "Ainda não consegui identificar o código completo." +
 
-            "<div class='ocr'>" +
+          const canvasContraste =
+            document.getElementById(
+              "canvasContraste"
+            );
 
-            "<b>A câmera reconheceu:</b><br><br>" +
 
-            "<span style='font-size:20px;'>" +
+          canvasContraste.width =
+            canvasOriginal.width;
 
-            escaparHtml(
-              texto
-            ).replace(
-              /\n/g,
-              "<br>"
-            ) +
 
-            "</span>" +
+          canvasContraste.height =
+            canvasOriginal.height;
 
-            "<br><br>" +
 
-            "<b>Depois da limpeza:</b><br><br>" +
+          const ctxContraste =
+            canvasContraste.getContext(
+              "2d",
+              {
+                willReadFrequently: true
+              }
+            );
 
-            "<span style='font-size:21px;'>" +
 
-            escaparHtml(
-              textoLimpo
-            ) +
+          ctxContraste.drawImage(
+            canvasOriginal,
+            0,
+            0
+          );
 
-            "</span>" +
 
-            "</div>" +
+          aplicarAltoContraste(
 
-            "<br><b>Olhe também a imagem em “Área que o sistema tentou ler”.</b>" +
+            ctxContraste,
 
-            "<br><br>Se o código estiver fora daquela imagem, precisamos apenas reposicionar a faixa."
+            canvasContraste.width,
+
+            canvasContraste.height
 
           );
 
 
-          processando =
-            false;
+          resultado =
+            await worker.recognize(
+              canvasContraste
+            );
 
 
-          document
-            .getElementById(
-              "btnCapturar"
-            )
-            .disabled =
-            false;
+          const texto2 =
+            resultado.data.text || "";
 
 
-          return;
+          console.log(
+            "OCR CONTRASTE:",
+            texto2
+          );
+
+
+          codigo =
+            analisarResultadoOcr(
+              texto2
+            );
+
+
+          /*
+           * Guardamos os dois textos
+           * para diagnóstico.
+           */
+
+          if (!codigo) {
+
+
+            mostrarFalhaOcr(
+              texto,
+              texto2
+            );
+
+
+            processando =
+              false;
+
+
+            document
+              .getElementById(
+                "btnCapturar"
+              )
+              .disabled =
+              false;
+
+
+            return;
+
+
+          }
+
+
+          texto =
+            texto2;
 
 
         }
 
+
+        /*
+         * =================================================
+         * SUCESSO
+         * =================================================
+         */
 
         const preco =
           calcularPreco(
@@ -1033,13 +1056,9 @@
 
 
         mostrarSucesso(
-
           codigo,
-
           preco,
-
           texto
-
         );
 
 
@@ -1047,11 +1066,9 @@
           navigator.vibrate
         ) {
 
-
           navigator.vibrate(
             [100, 60, 100]
           );
-
 
         }
 
@@ -1063,11 +1080,9 @@
 
           function() {
 
-
             retornarCodigo(
               codigo
             );
-
 
           },
 
@@ -1090,7 +1105,9 @@
 
           "Ocorreu um erro durante a leitura.<br><br>" +
 
-          "Tente novamente mantendo somente a linha escrita dentro da faixa rosa."
+          escaparHtml(
+            erro.message || ""
+          )
 
         );
 
@@ -1115,11 +1132,11 @@
 
     /*
      * =====================================================
-     * MELHORAR IMAGEM
+     * ALTO CONTRASTE
      * =====================================================
      */
 
-    function melhorarImagem(
+    function aplicarAltoContraste(
       ctx,
       largura,
       altura
@@ -1146,12 +1163,7 @@
       ) {
 
 
-        /*
-         * Tons de cinza.
-         */
-
-
-        let cinza =
+        const cinza =
 
           dados[i] *
           0.299 +
@@ -1164,39 +1176,29 @@
 
 
         /*
-         * Contraste moderado.
+         * Preto/branco.
+         *
+         * Fundo claro -> branco
+         * caracteres escuros -> preto
          */
 
-
-        cinza =
-          (
-            cinza -
-            128
-          ) *
-          1.35 +
-          128;
-
-
-        cinza =
-          Math.max(
-            0,
-            Math.min(
-              255,
-              cinza
-            )
-          );
+        const valor =
+          cinza >
+          150
+            ? 255
+            : 0;
 
 
         dados[i] =
-          cinza;
+          valor;
 
 
         dados[i + 1] =
-          cinza;
+          valor;
 
 
         dados[i + 2] =
-          cinza;
+          valor;
 
 
       }
@@ -1214,40 +1216,33 @@
 
     /*
      * =====================================================
-     * LIMPAR TEXTO OCR
+     * ANALISAR OCR
      * =====================================================
      */
 
-    function limparTextoOcr(
+    function analisarResultadoOcr(
       texto
     ) {
 
 
-      return String(
-        texto || ""
-      )
-        .toUpperCase()
-        .replace(
-          /[^A-Z0-9]/g,
-          ""
-        );
+      let limpo =
+        String(
+          texto || ""
+        )
+          .toUpperCase()
+          .replace(
+            /[^A-Z0-9]/g,
+            ""
+          );
 
 
-    }
+      console.log(
+        "OCR LIMPO:",
+        limpo
+      );
 
 
-    /*
-     * =====================================================
-     * EXTRAIR CÓDIGO
-     * =====================================================
-     */
-
-    function extrairCodigo(
-      texto
-    ) {
-
-
-      if (!texto) {
+      if (!limpo) {
 
         return "";
 
@@ -1255,25 +1250,20 @@
 
 
       /*
-       * Primeiro:
+       * =================================================
+       * FORMATO PRINCIPAL
+       * =================================================
        *
        * 8 números
        * +
        * letras opcionais
        * +
-       * 5 números finais
-       *
-       * Exemplos:
-       *
-       * 23118843AT04890
-       * 2311884304890
-       * 12345678AP07290
-       * 12345678ABC05690
+       * 5 números
        */
 
 
       let encontrados =
-        texto.match(
+        limpo.match(
           /\d{8}[A-Z]{0,6}\d{5}/g
         );
 
@@ -1283,36 +1273,50 @@
         encontrados.length
       ) {
 
-
         return escolherMelhorCodigo(
           encontrados
         );
-
 
       }
 
 
       /*
        * =================================================
-       * SEGUNDA TENTATIVA
+       * CORREÇÕES MAIS COMUNS
        * =================================================
        *
-       * Correções comuns do OCR:
+       * O -> 0
+       * Q -> 0
+       * I -> 1
+       * L -> 1
        *
-       * O/Q → 0
-       * I/L → 1
-       *
-       * Usamos somente como tentativa
-       * de recuperação.
+       * Aqui usamos para recuperar
+       * posições numéricas.
        */
 
 
-      let corrigido =
-        texto
-          .replace(/O/g, "0")
-          .replace(/Q/g, "0")
-          .replace(/I/g, "1")
-          .replace(/L/g, "1");
+      const corrigido =
+        limpo
+
+          .replace(
+            /O/g,
+            "0"
+          )
+
+          .replace(
+            /Q/g,
+            "0"
+          )
+
+          .replace(
+            /I/g,
+            "1"
+          )
+
+          .replace(
+            /L/g,
+            "1"
+          );
 
 
       encontrados =
@@ -1326,27 +1330,22 @@
         encontrados.length
       ) {
 
-
         return escolherMelhorCodigo(
           encontrados
         );
-
 
       }
 
 
       /*
-       * Terceira tentativa:
+       * Sem letras:
        *
-       * aceita qualquer sequência
-       * alfanumérica razoável que
-       * termine em 5 números.
+       * 8 + 5 = 13 números
        */
 
-
       encontrados =
-        texto.match(
-          /[A-Z0-9]{8,20}\d{5}/g
+        corrigido.match(
+          /\d{13}/g
         );
 
 
@@ -1355,24 +1354,19 @@
         encontrados.length
       ) {
 
-
-        return escolherMelhorCodigo(
-          encontrados
-        );
-
+        return encontrados[0];
 
       }
 
 
       return "";
 
-
     }
 
 
     /*
      * =====================================================
-     * ESCOLHER MELHOR RESULTADO
+     * ESCOLHER MELHOR CÓDIGO
      * =====================================================
      */
 
@@ -1384,13 +1378,6 @@
       codigos.sort(
 
         function(a, b) {
-
-
-          /*
-           * Pela etiqueta que vimos,
-           * aproximadamente 15 caracteres
-           * é um tamanho bastante plausível.
-           */
 
 
           const alvo =
@@ -1427,7 +1414,97 @@
 
     /*
      * =====================================================
-     * CALCULAR PREÇO
+     * MOSTRAR FALHA
+     * =====================================================
+     */
+
+    function mostrarFalhaOcr(
+      tentativa1,
+      tentativa2
+    ) {
+
+
+      const limpo1 =
+        String(
+          tentativa1 || ""
+        )
+          .toUpperCase()
+          .replace(
+            /[^A-Z0-9]/g,
+            ""
+          );
+
+
+      const limpo2 =
+        String(
+          tentativa2 || ""
+        )
+          .toUpperCase()
+          .replace(
+            /[^A-Z0-9]/g,
+            ""
+          );
+
+
+      mostrarErro(
+
+        "Ainda não consegui reconhecer o código." +
+
+        "<div class='ocr'>" +
+
+        "<b>Primeira leitura:</b><br><br>" +
+
+        escaparHtml(
+          tentativa1 || "(vazio)"
+        )
+          .replace(
+            /\n/g,
+            "<br>"
+          ) +
+
+        "<br><br>" +
+
+        "<b>Segunda leitura:</b><br><br>" +
+
+        escaparHtml(
+          tentativa2 || "(vazio)"
+        )
+          .replace(
+            /\n/g,
+            "<br>"
+          ) +
+
+        "<br><br>" +
+
+        "<b>Texto limpo:</b><br>" +
+
+        escaparHtml(
+          limpo1
+        ) +
+
+        "<br>" +
+
+        escaparHtml(
+          limpo2
+        ) +
+
+        "</div>" +
+
+        "<br><b>Confira a imagem abaixo.</b><br><br>" +
+
+        "Ela deve mostrar praticamente somente " +
+
+        "<b>23118843AT04890</b> ou o código da etiqueta que você estiver testando."
+
+      );
+
+
+    }
+
+
+    /*
+     * =====================================================
+     * PREÇO
      * =====================================================
      */
 
@@ -1455,9 +1532,7 @@
         )
       ) {
 
-
         return "";
-
 
       }
 
@@ -1491,7 +1566,7 @@
 
     /*
      * =====================================================
-     * CÓDIGO MANUAL
+     * MANUAL
      * =====================================================
      */
 
@@ -1514,14 +1589,11 @@
 
       if (!codigo) {
 
-
         mostrarErro(
           "Digite o código da etiqueta."
         );
 
-
         return;
-
 
       }
 
@@ -1538,14 +1610,11 @@
         )
       ) {
 
-
         mostrarErro(
           "Os últimos 5 caracteres precisam ser números."
         );
 
-
         return;
-
 
       }
 
@@ -1571,14 +1640,11 @@
 
       if (!URL_RETORNO) {
 
-
         mostrarErro(
           "Não foi possível retornar ao sistema."
         );
 
-
         return;
-
 
       }
 
@@ -1629,9 +1695,7 @@
 
             function(track) {
 
-
               track.stop();
-
 
             }
 
@@ -1653,13 +1717,10 @@
 
       if (video) {
 
-
         video.pause();
-
 
         video.srcObject =
           null;
-
 
       }
 
@@ -1672,10 +1733,8 @@
 
       if (botao) {
 
-
         botao.disabled =
           true;
-
 
       }
 
@@ -1752,7 +1811,7 @@
 
       campo.innerHTML =
 
-        "✅ Código reconhecido" +
+        "✅ Código reconhecido!" +
 
         "<div class='codigo'>" +
 
@@ -1784,15 +1843,14 @@
 
         "<div class='ocr'>" +
 
-        "<b>OCR detectou:</b><br><br>" +
+        "<b>Leitura da câmera:</b><br>" +
 
         escaparHtml(
           textoOcr
-        )
-          .replace(
-            /\n/g,
-            "<br>"
-          ) +
+        ).replace(
+          /\n/g,
+          "<br>"
+        ) +
 
         "</div>";
 
@@ -1802,7 +1860,7 @@
 
     /*
      * =====================================================
-     * SEGURANÇA DO HTML
+     * HTML SEGURO
      * =====================================================
      */
 
@@ -1846,7 +1904,7 @@
 
     /*
      * =====================================================
-     * ENCERRAR OCR AO SAIR
+     * SAIR
      * =====================================================
      */
 
@@ -1865,9 +1923,7 @@
 
           try {
 
-
             workerOcr.terminate();
-
 
           }
 
@@ -1881,7 +1937,9 @@
 
     );
 
+
   </script>
+
 
 </body>
 
